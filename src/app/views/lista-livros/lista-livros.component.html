@@ -5,13 +5,13 @@
       type="search"
       [(ngModel)]="campoBusca"
     >
-    <button (click)="buscarLivros()">
+    <button (click)="searchBooks()">
       <img src="assets/imagens/icone-busca.png" alt="Lupa de cor roxa">
     </button>
   </div>
   <p>Busque por assunto, autoria, nome...</p>
-<div class="container-card" *ngIf="listaLivros?.length > 0, else telaInicial">
-  <div *ngFor="let livro of listaLivros">
+<div class="container-card" *ngIf="booksList?.length > 0, else telaInicial">
+  <div *ngFor="let livro of booksList">
     <app-livro [livro]="livro"></app-livro>
   </div>
 </div>
