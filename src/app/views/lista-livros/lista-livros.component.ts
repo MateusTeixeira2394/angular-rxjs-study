@@ -1,37 +1,48 @@
-import { Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, tap, catchError, throwError, EMPTY } from 'rxjs';
 import Book from '../../model/book.interface';
 import Item from '../../model/item.interface';
+import ResultBook from '../../model/resultBook.interface';
 import { BookService } from '../../service/book.service';
+
+const DELAY: number = 1000;
+
+const ERROR_MESSAGE: string = 'Ops, houve algum erro. Recarregue a página.';
 
 @Component({
   selector: 'app-lista-livros',
   templateUrl: './lista-livros.component.html',
   styleUrls: ['./lista-livros.component.css']
 })
-export class ListaLivrosComponent implements OnDestroy {
+export class ListaLivrosComponent {
+
+  public campoBusca: FormControl<string> = new FormControl();
+
+  public resultBook: ResultBook;
 
   public booksList: Book[] = [];
 
-  public campoBusca: string = '';
+  public errorMessage: string = '';
 
-  public subscription: Subscription;
+  public foundBooks$ = this.campoBusca.valueChanges
+    .pipe(
+      debounceTime(DELAY),
+      filter(typedValue => typedValue.length >= 3),
+      tap(() => console.log('fluxo inicial')),
+      distinctUntilChanged(),
+      switchMap(typedValue => this.service.search(typedValue)),
+      tap(() => console.log('requisição ao servidor')),
+      map(result => this.resultBook = result),
+      map(result => result.items ?? []),
+      map(items => this.booksList = this.mapToBooks(items)),
+      catchError(error => {
+        this.errorMessage = ERROR_MESSAGE;
+        return EMPTY;
+      })
+    );
 
   constructor(private service: BookService) { }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-
-  searchBooks() {
-
-    this.subscription = this.service.search(this.campoBusca).subscribe({
-      next: result => this.booksList = this.mapToBooks(result),
-      error: error => console.log(error),
-      complete: () => console.log('books', this.booksList)
-    });
-
-  };
 
   private mapToBooks(items: Item[]): Book[] {
 

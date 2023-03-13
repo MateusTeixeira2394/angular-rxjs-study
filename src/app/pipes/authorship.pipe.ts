@@ -7,6 +7,8 @@ export class AuthorshipPipe implements PipeTransform {
 
   transform(authors: string[]): string {
 
+    if(!authors) return '';
+
     return authors[0] || '';
 
   };

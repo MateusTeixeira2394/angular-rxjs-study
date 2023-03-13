@@ -13,16 +13,11 @@ export class BookService {
 
   constructor(private http: HttpClient) { };
 
-  search(typedValue: string): Observable<Item[]> {
+  search(typedValue: string): Observable<ResultBook> {
 
     const params = new HttpParams().append('q', typedValue);
 
-    return this.http.get<ResultBook>(this.API, { params })
-      .pipe(
-        map(apiRes => apiRes.items),
-        tap(result => console.log('tap', result))
-      );
-
+    return this.http.get<ResultBook>(this.API, { params });
   };
 
 };
